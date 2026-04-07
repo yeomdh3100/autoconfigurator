@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>통합 작업 제목 생성기</title>
+
+<style>
+body { font-family:'Segoe UI', Arial; background:#f4f6f9; margin:0; padding:40px 20px; }
+.wrapper { max-width:1000px; margin:auto; background:#fff; padding:40px; border-radius:18px; box-shadow:0 20px 50px rgba(0,0,0,0.08); }
+h1 { margin-bottom:30px; }
+h2 { margin:0 0 20px 0; }
+.section { display:none; }
+.active { display:block; }
+.top-buttons { margin-bottom:30px; }
+.top-buttons button { padding:10px 22px; border-radius:30px; border:none; background:#e5e7eb; cursor:pointer; font-weight:600; margin-right:10px; }
+.top-buttons .active-btn { background:#4f46e5; color:#fff; }
+input[type="text"] { width:100%; padding:10px 12px; border-radius:10px; border:1px solid #d1d5db; margin-bottom:10px; font-size:14px; }
+input[type="text"]:focus { outline:none; border-color:#4f46e5; }
+.radio-group, .checkbox-group { margin-bottom:10px; padding:8px 12px; background:#f9fafb; border-radius:10px; border:1px solid #e5e7eb; }
+.radio-group label, .checkbox-group label { margin-right:15px; margin-bottom:8px; display:inline-block; }
+.generate-btn { width:100%; padding:12px; border:none; border-radius:12px; background:#4f46e5; color:#fff; font-weight:bold; cursor:pointer; }
+.generate-btn:hover { background:#4338ca; }
+.result-box { margin-top:20px; }
+.result, .reason-container { background:#f3f4f6; padding:12px 16px; border-radius:12px; display:flex; justify-content:space-between; align-items:center; word-break:break-all; margin-top:8px; }
+.reason-container { background:#e0ecff; }
+.copy-btn { padding:6px 12px; border:none; border-radius:8px; background:#10b981; color:#fff; cursor:pointer; display:none; }
+.copy-btn:hover { background:#059669; }
+.warning { color:#dc2626; font-weight:500; margin-top:10px; }
+.label-title { font-weight:600; margin:18px 0 6px 0; display:block; font-size:14px; color:#374151; }
+</style>
+</head>
+
+<body>
+<div class="wrapper">
+<h1>통합 작업 제목 생성기</h1>
+
+<div class="top-buttons">
+  <button id="equipBtn" class="active-btn" onclick="showSection('equip')">장비작업</button>
+  <button id="electricBtn" onclick="showSection('electric')">전기작업</button>
+</div>
+
+<!-- ================= 장비작업 ================= -->
+<div id="equip" class="section active">
+
+
+<label class="label-title">긴급 여부</label>
+<div class="checkbox-group">
+<label><input type="checkbox" id="urgent"> 긴급</label>
+</div>
+
+<label class="label-title">매체 구분</label>
+<div class="radio-group" style="display:grid; grid-template-columns:repeat(4,minmax(120px,1fr)); gap:6px 12px;">
+<label><input type="radio" name="type" value="B2C" checked onchange="toggleLineInput()"> B2C</label>
+<label><input type="radio" name="type" value="B2B" onchange="toggleLineInput()"> B2B</label>
+</div>
+
+<label class="label-title">국사명/장비명</label>
+<input type="text" id="office" placeholder="국사명 or 장비명 입력">
+
+<label class="label-title">회선번호 (B2B 선택 시 필수)</label>
+<input type="text" id="lineNumber" placeholder="회선번호 입력" disabled>
+
+<label class="label-title">작업내용</label>
+<div class="radio-group" style="display:grid; grid-template-columns:repeat(4,minmax(120px,1fr)); gap:6px 12px;">
+<label><input type="radio" name="workContent" value="장비점검" checked> 장비점검</label>
+<label><input type="radio" name="workContent" value="장비철거"> 장비철거</label>
+<label><input type="radio" name="workContent" value="광레벨점검"> 광레벨점검</label>
+<label><input type="radio" name="workContent" value="OJC포설"> OJC포설</label>
+<label><input type="radio" name="workContent" value="회선개통"> 회선개통</label>
+<label><input type="radio" name="workContent" value="회선점검"> 회선점검</label>
+<label><input type="radio" name="workContent" value="장비리부팅"> 장비리부팅</label>
+<label><input type="radio" name="workContent" value="CRC점검"> CRC점검</label>
+<label><input type="radio" name="workContent" value="BIP점검"> BIP점검</label>
+<div style="display:flex; align-items:center; gap:8px;">
+<label style="margin:0;"><input type="radio" name="workContent" value="기타" onchange="toggleCustomWork()"> 기타</label>
+<input type="text" id="customWork" placeholder="기타 작업내용 입력" style="display:none; width:110px;">
+</div>
+</div>
+
+<button class="generate-btn" onclick="generateEquip()">작업 제목 생성</button>
+
+<div id="equipWarning" class="warning"></div>
+
+<div class="result-box">
+<div class="result">
+<span id="equipResult"></span>
+<button class="copy-btn" id="copyEquipBtn" onclick="copyText('equipResult')">복사</button>
+</div>
+</div>
+</div>
+
+<!-- ================= 전기작업 ================= -->
+<div id="electric" class="section">
+
+<label class="label-title">국소명</label>
+<input type="text" id="location">
+<label class="label-title">작업내용</label>
+<input type="text" id="elecWork">
+<label class="label-title">B2C/B2B 구분</label>
+<div class="radio-group" style="display:grid; grid-template-columns:repeat(4,minmax(120px,1fr)); gap:6px 12px;">
+<label><input type="radio" name="fttxType" value="B2C"> B2C</label>
+<label><input type="radio" name="fttxType" value="B2B"> B2B</label>
+</div>
+<label class="label-title">작업주체</label>
+<div class="radio-group" style="display:grid; grid-template-columns:repeat(4,minmax(120px,1fr)); gap:6px 12px;">
+<label><input type="radio" name="worker" value="전기안전공사"> 전기안전공사</label>
+<label><input type="radio" name="worker" value="건물측"> 건물측</label>
+<label><input type="radio" name="worker" value="SKB"> SKB</label>
+<label><input type="radio" name="worker" value="한전"> 한전</label>
+</div>
+<label class="label-title">정전범위</label>
+<div class="checkbox-group">
+<label><input type="checkbox" id="household"> 세대</label>
+<label><input type="checkbox" id="public"> 공용</label>
+</div>
+<label class="label-title">전원구성</label>
+<div class="radio-group" style="display:grid; grid-template-columns:repeat(4,minmax(120px,1fr)); gap:6px 12px;">
+<label><input type="radio" name="powerConfig" value="집중"> 집중</label>
+<label><input type="radio" name="powerConfig" value="분산"> 분산</label>
+<label><input type="radio" name="powerConfig" value="부분집중"> 부분집중</label>
+</div>
+<label class="label-title">발전기가동유무</label>
+<div class="checkbox-group">
+<label><input type="checkbox" id="generator"> 발전기 가동</label>
+</div>
+<label class="label-title">접수유형</label>
+<div class="radio-group" style="display:grid; grid-template-columns:repeat(4,minmax(120px,1fr)); gap:6px 12px;">
+<label><input type="radio" name="requestType" value="F"> WEBFAX</label>
+<label><input type="radio" name="requestType" value="D"> DB활용TM</label>
+<label><input type="radio" name="requestType" value="V"> 전기안전공사방문</label>
+<label><input type="radio" name="requestType" value="M"> 전기안전공사문자</label>
+<label><input type="radio" name="requestType" value="A"> 미통보국소방문</label>
+<label><input type="radio" name="requestType" value="S"> 타사_지점</label>
+<label><input type="radio" name="requestType" value="H"> 당사전원작업</label>
+<label><input type="radio" name="requestType" value="K"> 한전작업</label>
+</div>
+<button class="generate-btn" onclick="generateElectric()">제목 & 작업사유 생성</button>
+<div id="elecWarning" class="warning"></div>
+<div class="result-box">
+<label class="label-title">생성된 작업 제목</label>
+<div class="result"><span id="titleText"></span><button class="copy-btn" id="copyTitleBtn" onclick="copyText('titleText')">복사</button></div>
+
+<label class="label-title">생성된 작업 사유</label>
+<div class="reason-container"><span id="reasonText"></span><button class="copy-btn" id="copyReasonBtn" onclick="copyText('reasonText')">복사</button></div>
+</div>
+</div>
+</div>
+
+<script>
+function showSection(id){
+  document.getElementById('equip').classList.remove('active');
+  document.getElementById('electric').classList.remove('active');
+  document.getElementById('equipBtn').classList.remove('active-btn');
+  document.getElementById('electricBtn').classList.remove('active-btn');
+  document.getElementById(id).classList.add('active');
+  document.getElementById(id+'Btn').classList.add('active-btn');
+}
+function toggleLineInput(){
+  const type=getSelected('type');
+  const line=document.getElementById('lineNumber');
+  if(type==='B2B'){
+    line.disabled=false;
+  }else{
+    line.disabled=true;
+    line.value='';
+  }
+}
+
+function toggleCustomWork(){
+  const radios=document.getElementsByName('workContent');
+  const custom=document.getElementById('customWork');
+  let isEtc=false;
+  for(let r of radios){ if(r.checked && r.value==='기타') isEtc=true; }
+  custom.style.display=isEtc?'block':'none';
+  if(!isEtc) custom.value='';
+}
+
+function getSelected(name){ const r=document.getElementsByName(name); for(let i of r) if(i.checked) return i.value; return ""; }
+function copyText(id){ navigator.clipboard.writeText(document.getElementById(id).textContent); }
+
+function generateEquip(){
+  const urgent=document.getElementById("urgent").checked;
+  const type=getSelected("type");
+  const office=document.getElementById("office").value.trim();
+  const line=document.getElementById("lineNumber").value.trim();
+  let work=getSelected("workContent");
+  if(work==="기타"){ work=document.getElementById("customWork").value.trim(); }
+  const warn=document.getElementById("equipWarning");
+  const result=document.getElementById("equipResult");
+  const copyBtn=document.getElementById("copyEquipBtn");
+  warn.innerHTML=""; result.textContent=""; copyBtn.style.display="none";
+  if(!office){ warn.innerHTML="국사명을 입력해주세요."; return; }
+  if(work==="" ){ warn.innerHTML="작업내용을 입력하거나 선택해주세요."; return; }
+  if(type==="B2B" && !line){ warn.innerHTML="회선번호를 입력해주세요."; return; }
+  const media= type==="B2C"?"FTTx_B2C":"FTTx_B2B";
+  let text=`대구운용팀/${media}/${office}`;
+  if(type==="B2B") text+=`/${line}`;
+  text+=`/${work}`;
+  if(urgent) text=`[긴급작업]${text}`;
+  result.textContent=text;
+  copyBtn.style.display="inline-block";
+}
+
+function generateElectric(){
+  const location=document.getElementById("location").value.trim();
+  const work=document.getElementById("elecWork").value.trim();
+  const fttxType=getSelected("fttxType");
+  const worker=getSelected("worker");
+  const powerConfig=getSelected("powerConfig")||"미선택";
+  const requestType=getSelected("requestType")||"미선택";
+  const household=document.getElementById("household").checked;
+  const pub=document.getElementById("public").checked;
+  const generator=document.getElementById("generator").checked;
+  const warn=document.getElementById("elecWarning");
+  const titleEl=document.getElementById("titleText");
+  const reasonEl=document.getElementById("reasonText");
+  const copyTitle=document.getElementById("copyTitleBtn");
+  const copyReason=document.getElementById("copyReasonBtn");
+  warn.innerHTML=""; titleEl.textContent=""; reasonEl.textContent="";
+  copyTitle.style.display="none"; copyReason.style.display="none";
+  if(!location||!work||!fttxType||!worker){ warn.innerHTML="⚠ 국소명, 작업내용, FTTx구분, 작업주체는 필수 입력입니다."; return; }
+  const householdText=household?"세대X":"세대O";
+  const publicText=pub?"공용X":"공용O";
+  const outageText=`${householdText},${publicText}`;
+  const generatorText=generator?"발전가동O":"발전가동X";
+  const prefix=`대구운용팀/FTTx_${fttxType}/`;
+  const title=`${prefix}[전기작업]${location}/${work}/${worker}/${outageText}`;
+  const reason=`${prefix}[전기작업]${location}/${work}/${worker}/${powerConfig}/${outageText}/${generatorText}/${requestType}`;
+  titleEl.textContent=title;
+  reasonEl.textContent=reason;
+  copyTitle.style.display="inline-block";
+  copyReason.style.display="inline-block";
+}
+</script>
+
+</body>
+</html>
